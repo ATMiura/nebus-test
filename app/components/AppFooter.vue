@@ -1,10 +1,10 @@
 <template>
-  <footer class="app-footer">
-    <div class="container app-footer__content">
-      <p class="app-footer__name">Nebus Notes</p>
-      <p class="app-footer__description">Заметки и списки задач</p>
-    </div>
-  </footer>
+  <div class="app-footer">
+    <Container class="app-footer__content">
+      <div class="app-footer__name">Nebus Notes</div>
+      <div class="app-footer__description">Заметки и списки задач</div>
+    </Container>
+  </div>
 </template>
 
 <style scoped lang="scss">

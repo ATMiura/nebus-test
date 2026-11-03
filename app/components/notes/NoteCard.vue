@@ -4,12 +4,11 @@
 
     <ul v-if="previewTodos.length" class="note-card__todos">
       <li v-for="todo in previewTodos" :key="todo.id" class="note-card__todo">
-        <label class="note-card__task">
-          <input type="checkbox" :checked="todo.completed" disabled />
+        <Checkbox class="note-card__task" :model-value="todo.completed" size="small" disabled>
           <span :class="{ 'note-card__completed': todo.completed }">
             {{ todo.text }}
           </span>
-        </label>
+        </Checkbox>
       </li>
     </ul>
 
@@ -18,21 +17,9 @@
     <div v-if="remainingCount > 0" class="note-card__hint">Ещё задач: {{ remainingCount }}</div>
 
     <div class="note-card__actions">
-      <button
-        class="button button--secondary"
-        type="button"
-        :aria-label="`Изменить заметку «${note.title}»`"
-      >
-        Изменить
-      </button>
+      <Button :to="`/notes/${note.id}`"> Изменить </Button>
 
-      <button
-        class="button button--danger"
-        type="button"
-        :aria-label="`Удалить заметку «${note.title}»`"
-      >
-        Удалить
-      </button>
+      <Button variant="danger"> Удалить </Button>
     </div>
   </div>
 </template>
@@ -78,18 +65,6 @@ const remainingCount = computed(() => props.note.todos.length - previewTodos.val
     align-items: flex-start;
     gap: 10px;
     overflow-wrap: anywhere;
-
-    input {
-      flex-shrink: 0;
-      width: 18px;
-      height: 18px;
-      margin: 3px 0 0;
-      accent-color: var(--color-primary);
-    }
-
-    span {
-      min-width: 0;
-    }
   }
 
   &__completed {

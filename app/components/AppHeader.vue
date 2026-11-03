@@ -1,14 +1,14 @@
 <template>
-  <header class="app-header">
-    <div class="container app-header__content">
+  <div class="app-header">
+    <Container class="app-header__content">
       <div class="app-header__identity">
         <NuxtLink class="app-header__brand" to="/">Nebus Notes</NuxtLink>
-        <p class="app-header__description">Задачи и планы в одном месте</p>
+        <div class="app-header__description">Задачи и планы в одном месте</div>
       </div>
 
-      <button class="button button--primary" type="button">Создать заметку</button>
-    </div>
-  </header>
+      <Button variant="primary" to="/notes/new"> Создать заметку </Button>
+    </Container>
+  </div>
 </template>
 
 <style scoped lang="scss">
@@ -35,8 +35,8 @@
     line-height: 1.2;
     text-decoration: none;
 
-    @media (hover: hover) {
-      &:hover {
+    &:hover {
+      @media (hover: hover) {
         color: var(--color-primary);
       }
     }
