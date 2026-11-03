@@ -19,7 +19,7 @@
     <div class="note-card__actions">
       <Button :to="`/notes/${note.id}`"> Изменить </Button>
 
-      <Button variant="danger" disabled>Удалить</Button>
+      <Button variant="danger" @click="emit('remove')">Удалить</Button>
     </div>
   </div>
 </template>
@@ -29,6 +29,10 @@ import type { Note } from '~/types/note'
 
 const props = defineProps<{
   note: Note
+}>()
+
+const emit = defineEmits<{
+  remove: []
 }>()
 
 const previewTodos = computed(() => props.note.todos.slice(0, 3))

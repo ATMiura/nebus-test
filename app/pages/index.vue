@@ -3,27 +3,55 @@
     <Container>
       <PageHeader title="Мои заметки" />
 
-      <div v-if="notes.length" class="notes-grid">
-        <NoteCard v-for="note in notes" :key="note.id" :note="note" />
+      <Notice v-if="notesStore.error">
+        {{ notesStore.error }}
+        <Button @click="notesStore.load">Повторить загрузку</Button>
+      </Notice>
+
+      <div v-if="notesStore.notes.length" class="notes-grid">
+        <NoteCard
+          v-for="note in notesStore.notes"
+          :key="note.id"
+          :note="note"
+          @remove="selectedNote = note"
+        />
       </div>
 
       <EmptyState
-        v-else
+        v-else-if="!notesStore.error"
         title="Здесь будут ваши заметки"
         description="Создайте первую заметку и добавьте в неё задачи."
       />
     </Container>
+
+    <TodoConfirm
+      :open="selectedNote !== null"
+      title="Удалить заметку?"
+      :message="`Заметка «${selectedNote?.title ?? ''}» будет удалена без возможности восстановления.`"
+      confirm-text="Да, удалить заметку"
+      confirm-variant="danger"
+      @confirm="deleteNote"
+      @cancel="selectedNote = null"
+    />
   </main>
 </template>
 
 <script setup lang="ts">
-import { demoNotes } from '~/data/demo-notes'
+import { useNotesStore } from '~/stores/notes'
+import type { Note } from '~/types/note'
 
 useHead({
   title: 'Мои заметки',
 })
 
-const notes = demoNotes
+const notesStore = useNotesStore()
+const selectedNote = ref<Note | null>(null)
+function deleteNote() {
+  if (selectedNote.value) {
+    notesStore.deleteNote(selectedNote.value.id)
+    selectedNote.value = null
+  }
+}
 </script>
 
 <style scoped lang="scss">

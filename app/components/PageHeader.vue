@@ -1,7 +1,6 @@
 <template>
   <div class="page-header">
     <NuxtLink v-if="backTo" class="page-header__back" :to="backTo">
-      <span>←</span>
       {{ backLabel }}
     </NuxtLink>
 
@@ -17,7 +16,7 @@ withDefaults(
     backLabel?: string
   }>(),
   {
-    backLabel: 'Назад',
+    backLabel: '← Назад',
   },
 )
 </script>

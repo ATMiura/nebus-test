@@ -1,5 +1,5 @@
 <template>
-  <Form class="note-editor" variant="panel" title="Содержимое заметки">
+  <Form class="note-editor" variant="panel" title="Содержимое заметки" @submit="emit('save')">
     <template #header-actions>
       <Button disabled>Отменить шаг</Button>
       <Button disabled>Повторить</Button>
@@ -7,6 +7,7 @@
 
     <Input
       :model-value="note.title"
+      :error="showErrors && !note.title.trim() ? 'Введите название заметки.' : undefined"
       label="Название заметки"
       placeholder="Например, планы на неделю"
       @update:model-value="emit('update-title', $event)"
@@ -26,6 +27,7 @@
             ref="todoRows"
             :todo="todo"
             :position="index + 1"
+            :show-errors="showErrors"
             @update:text="emit('update-todo-text', todo.id, $event)"
             @update:completed="emit('update-todo-completed', todo.id, $event)"
             @remove="removeTodo(todo.id)"
@@ -43,9 +45,11 @@
     </template>
 
     <template #actions>
-      <Button variant="primary" type="submit" disabled>Сохранить</Button>
+      <Button variant="primary" type="submit" :disabled="!isDirty || unavailable">Сохранить</Button>
       <Button :disabled="!isDirty" @click="emit('cancel')">Отменить редактирование</Button>
-      <Button v-if="!isNew" variant="danger" disabled>Удалить заметку</Button>
+      <Button v-if="!isNew" variant="danger" :disabled="unavailable" @click="emit('delete')"
+        >Удалить заметку</Button
+      >
     </template>
   </Form>
 </template>
@@ -59,6 +63,8 @@ const props = defineProps<{
   note: Note
   isNew: boolean
   isDirty: boolean
+  unavailable: boolean
+  showErrors: boolean
 }>()
 
 const emit = defineEmits<{
@@ -68,16 +74,16 @@ const emit = defineEmits<{
   'update-todo-completed': [id: string, value: boolean]
   'remove-todo': [id: string]
   cancel: []
+  save: []
+  delete: []
 }>()
 
 const todoRows = useTemplateRef<InstanceType<typeof TodoEditorRow>[]>('todoRows')
 const addButton = useTemplateRef<InstanceType<typeof Button>>('addButton')
 const completedCount = computed(() => props.note.todos.filter((todo) => todo.completed).length)
-
 function focusTodo(id: string) {
   todoRows.value?.find((row) => row.id === id)?.focus()
 }
-
 async function addTodo() {
   emit('add-todo')
   await nextTick()
@@ -86,7 +92,6 @@ async function addTodo() {
     focusTodo(todo.id)
   }
 }
-
 async function removeTodo(id: string) {
   const index = props.note.todos.findIndex((todo) => todo.id === id)
   emit('remove-todo', id)
