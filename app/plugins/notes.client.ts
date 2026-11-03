@@ -1,19 +1,22 @@
-import { useNotesStore } from '~/stores/notes'
-import { NOTES_STORAGE_KEY } from '~/utils/notes-storage'
+import { useNotesStore } from '~/stores/notes';
+import { NOTES_STORAGE_KEY } from '~/utils/notes-storage';
 
 export default defineNuxtPlugin((nuxtApp) => {
-  const notesStore = useNotesStore(nuxtApp.$pinia)
-  notesStore.load()
+  const notesStore = useNotesStore(nuxtApp.$pinia);
+  notesStore.load();
+
   function syncNotes(event: StorageEvent) {
     if (event.key !== NOTES_STORAGE_KEY && event.key !== null) {
-      return
+      return;
     }
+
     if (event.storageArea === localStorage) {
-      notesStore.refresh()
+      notesStore.refresh();
     }
   }
-  window.addEventListener('storage', syncNotes)
+
+  window.addEventListener('storage', syncNotes);
   nuxtApp.vueApp.onUnmount(() => {
-    window.removeEventListener('storage', syncNotes)
-  })
-})
+    window.removeEventListener('storage', syncNotes);
+  });
+});

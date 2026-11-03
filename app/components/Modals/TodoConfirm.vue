@@ -12,28 +12,28 @@
 <script setup lang="ts">
 withDefaults(
   defineProps<{
-    open: boolean
-    title: string
-    message: string
-    confirmText?: string
-    cancelText?: string
-    confirmVariant?: 'primary' | 'danger'
+    open: boolean;
+    title: string;
+    message: string;
+    confirmText?: string;
+    cancelText?: string;
+    confirmVariant?: 'primary' | 'danger';
   }>(),
   {
     confirmText: 'Подтвердить',
     cancelText: 'Отмена',
     confirmVariant: 'primary',
   },
-)
+);
 
 const emit = defineEmits<{
-  confirm: []
-  cancel: []
-}>()
+  confirm: [];
+  cancel: [];
+}>();
 
 function updateOpen(value: boolean) {
   if (!value) {
-    emit('cancel')
+    emit('cancel');
   }
 }
 </script>

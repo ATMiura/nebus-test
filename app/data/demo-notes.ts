@@ -1,4 +1,4 @@
-import type { Note } from '~/types/note'
+import type { Note } from '~/types/note';
 
 export const demoNotes: Note[] = [
   {
@@ -24,4 +24,4 @@ export const demoNotes: Note[] = [
     title: 'Идеи',
     todos: [],
   },
-]
+];

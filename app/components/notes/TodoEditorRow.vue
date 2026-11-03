@@ -38,28 +38,28 @@
 </template>
 
 <script setup lang="ts">
-import type Textarea from '~/components/form/Textarea.vue'
-import type { TodoItem } from '~/types/note'
+import type Textarea from '~/components/form/Textarea.vue';
+import type { TodoItem } from '~/types/note';
 
 const props = defineProps<{
-  todo: TodoItem
-  position: number
-  showErrors: boolean
-}>()
+  todo: TodoItem;
+  position: number;
+  showErrors: boolean;
+}>();
 
 const emit = defineEmits<{
-  'update:text': [value: string]
-  'update:completed': [value: boolean]
-  remove: []
-}>()
+  'update:text': [value: string];
+  'update:completed': [value: boolean];
+  remove: [];
+}>();
 
-const textInput = useTemplateRef<InstanceType<typeof Textarea>>('textInput')
-const id = computed(() => props.todo.id)
+const textInput = useTemplateRef<InstanceType<typeof Textarea>>('textInput');
+const id = computed(() => props.todo.id);
 
 defineExpose({
   id,
   focus: () => textInput.value?.focus(),
-})
+});
 </script>
 
 <style scoped lang="scss">

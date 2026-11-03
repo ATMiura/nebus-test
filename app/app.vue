@@ -10,11 +10,12 @@
 useHead({
   titleTemplate: (title) => {
     if (title) {
-      return `${title} | Nebus Notes`
+      return `${title} | Nebus Notes`;
     }
-    return 'Nebus Notes'
+
+    return 'Nebus Notes';
   },
-})
+});
 </script>
 
 <style scoped lang="scss">

@@ -25,18 +25,18 @@
 </template>
 
 <script setup lang="ts">
-import type { Note } from '~/types/note'
+import type { Note } from '~/types/note';
 
 const props = defineProps<{
-  note: Note
-}>()
+  note: Note;
+}>();
 
 const emit = defineEmits<{
-  remove: []
-}>()
+  remove: [];
+}>();
 
-const previewTodos = computed(() => props.note.todos.slice(0, 3))
-const remainingCount = computed(() => props.note.todos.length - previewTodos.value.length)
+const previewTodos = computed(() => props.note.todos.slice(0, 3));
+const remainingCount = computed(() => props.note.todos.length - previewTodos.value.length);
 </script>
 
 <style scoped lang="scss">

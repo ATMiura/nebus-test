@@ -16,32 +16,33 @@
 </template>
 
 <script setup lang="ts">
-import type { ComponentPublicInstance } from 'vue'
-import type { RouteLocationRaw } from 'vue-router'
-import { NuxtLink } from '#components'
+import type { ComponentPublicInstance } from 'vue';
+import type { RouteLocationRaw } from 'vue-router';
+import { NuxtLink } from '#components';
 
 const props = withDefaults(
   defineProps<{
-    variant?: 'primary' | 'secondary' | 'danger'
-    type?: 'button' | 'submit' | 'reset'
-    size?: 'default' | 'icon' | 'icon-small'
-    disabled?: boolean
-    to?: RouteLocationRaw
+    variant?: 'primary' | 'secondary' | 'danger';
+    type?: 'button' | 'submit' | 'reset';
+    size?: 'default' | 'icon' | 'icon-small';
+    disabled?: boolean;
+    to?: RouteLocationRaw;
   }>(),
   { variant: 'secondary', type: 'button', size: 'default', disabled: false },
-)
+);
 
-const isLink = computed(() => props.to !== undefined && !props.disabled)
-const element = useTemplateRef<HTMLButtonElement | ComponentPublicInstance>('element')
+const isLink = computed(() => props.to !== undefined && !props.disabled);
+const element = useTemplateRef<HTMLButtonElement | ComponentPublicInstance>('element');
 
 function focus() {
-  const control = element.value instanceof HTMLElement ? element.value : element.value?.$el
+  const control = element.value instanceof HTMLElement ? element.value : element.value?.$el;
+
   if (control instanceof HTMLElement) {
-    control.focus()
+    control.focus();
   }
 }
 
-defineExpose({ focus })
+defineExpose({ focus });
 </script>
 
 <style scoped lang="scss">

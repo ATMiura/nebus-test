@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-withDefaults(defineProps<{ variant?: 'error' | 'success' }>(), { variant: 'error' })
+withDefaults(defineProps<{ variant?: 'error' | 'success' }>(), { variant: 'error' });
 </script>
 
 <style scoped lang="scss">

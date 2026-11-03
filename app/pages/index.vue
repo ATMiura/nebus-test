@@ -37,19 +37,20 @@
 </template>
 
 <script setup lang="ts">
-import { useNotesStore } from '~/stores/notes'
-import type { Note } from '~/types/note'
+import { useNotesStore } from '~/stores/notes';
+import type { Note } from '~/types/note';
 
 useHead({
   title: 'Мои заметки',
-})
+});
 
-const notesStore = useNotesStore()
-const selectedNote = ref<Note | null>(null)
+const notesStore = useNotesStore();
+const selectedNote = ref<Note | null>(null);
+
 function deleteNote() {
   if (selectedNote.value) {
-    notesStore.deleteNote(selectedNote.value.id)
-    selectedNote.value = null
+    notesStore.deleteNote(selectedNote.value.id);
+    selectedNote.value = null;
   }
 }
 </script>

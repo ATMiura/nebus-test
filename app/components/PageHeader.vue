@@ -11,14 +11,14 @@
 <script setup lang="ts">
 withDefaults(
   defineProps<{
-    title: string
-    backTo?: string
-    backLabel?: string
+    title: string;
+    backTo?: string;
+    backLabel?: string;
   }>(),
   {
     backLabel: '← Назад',
   },
-)
+);
 </script>
 
 <style scoped lang="scss">

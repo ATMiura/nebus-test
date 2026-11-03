@@ -55,52 +55,57 @@
 </template>
 
 <script setup lang="ts">
-import type Button from '~/components/form/Button.vue'
-import type TodoEditorRow from '~/components/notes/TodoEditorRow.vue'
-import type { Note } from '~/types/note'
+import type Button from '~/components/form/Button.vue';
+import type TodoEditorRow from '~/components/notes/TodoEditorRow.vue';
+import type { Note } from '~/types/note';
 
 const props = defineProps<{
-  note: Note
-  isNew: boolean
-  isDirty: boolean
-  unavailable: boolean
-  showErrors: boolean
-}>()
+  note: Note;
+  isNew: boolean;
+  isDirty: boolean;
+  unavailable: boolean;
+  showErrors: boolean;
+}>();
 
 const emit = defineEmits<{
-  'update-title': [value: string]
-  'add-todo': []
-  'update-todo-text': [id: string, value: string]
-  'update-todo-completed': [id: string, value: boolean]
-  'remove-todo': [id: string]
-  cancel: []
-  save: []
-  delete: []
-}>()
+  'update-title': [value: string];
+  'add-todo': [];
+  'update-todo-text': [id: string, value: string];
+  'update-todo-completed': [id: string, value: boolean];
+  'remove-todo': [id: string];
+  cancel: [];
+  save: [];
+  delete: [];
+}>();
 
-const todoRows = useTemplateRef<InstanceType<typeof TodoEditorRow>[]>('todoRows')
-const addButton = useTemplateRef<InstanceType<typeof Button>>('addButton')
-const completedCount = computed(() => props.note.todos.filter((todo) => todo.completed).length)
+const todoRows = useTemplateRef<InstanceType<typeof TodoEditorRow>[]>('todoRows');
+const addButton = useTemplateRef<InstanceType<typeof Button>>('addButton');
+const completedCount = computed(() => props.note.todos.filter((todo) => todo.completed).length);
+
 function focusTodo(id: string) {
-  todoRows.value?.find((row) => row.id === id)?.focus()
+  todoRows.value?.find((row) => row.id === id)?.focus();
 }
+
 async function addTodo() {
-  emit('add-todo')
-  await nextTick()
-  const todo = props.note.todos.at(-1)
+  emit('add-todo');
+  await nextTick();
+  const todo = props.note.todos.at(-1);
+
   if (todo) {
-    focusTodo(todo.id)
+    focusTodo(todo.id);
   }
 }
+
 async function removeTodo(id: string) {
-  const index = props.note.todos.findIndex((todo) => todo.id === id)
-  emit('remove-todo', id)
-  await nextTick()
-  const nextTodo = props.note.todos[Math.max(0, Math.min(index, props.note.todos.length - 1))]
+  const index = props.note.todos.findIndex((todo) => todo.id === id);
+  emit('remove-todo', id);
+  await nextTick();
+  const nextTodo = props.note.todos[Math.max(0, Math.min(index, props.note.todos.length - 1))];
+
   if (nextTodo) {
-    focusTodo(nextTodo.id)
+    focusTodo(nextTodo.id);
   } else {
-    addButton.value?.focus()
+    addButton.value?.focus();
   }
 }
 </script>

@@ -31,50 +31,51 @@
 </template>
 
 <script setup lang="ts">
-import type { InputTypeHTMLAttribute, StyleValue } from 'vue'
+import type { InputTypeHTMLAttribute, StyleValue } from 'vue';
 
-defineOptions({ inheritAttrs: false })
+defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(
   defineProps<{
-    id?: string
-    label?: string
-    type?: InputTypeHTMLAttribute
-    size?: 'default' | 'compact'
-    multiline?: boolean
-    rows?: number
-    hint?: string
-    error?: string
+    id?: string;
+    label?: string;
+    type?: InputTypeHTMLAttribute;
+    size?: 'default' | 'compact';
+    multiline?: boolean;
+    rows?: number;
+    hint?: string;
+    error?: string;
   }>(),
   { type: 'text', size: 'default', multiline: false, rows: 3 },
-)
+);
 
-const model = defineModel<string>({ required: true })
+const model = defineModel<string>({ required: true });
 const emit = defineEmits<{
-  blur: [event: FocusEvent]
-}>()
-const attrs = useAttrs()
-const generatedId = useId()
-const inputId = computed(() => props.id ?? generatedId)
-const element = useTemplateRef<HTMLInputElement | HTMLTextAreaElement>('element')
+  blur: [event: FocusEvent];
+}>();
+const attrs = useAttrs();
+const generatedId = useId();
+const inputId = computed(() => props.id ?? generatedId);
+const element = useTemplateRef<HTMLInputElement | HTMLTextAreaElement>('element');
 
 function getControlAttrs() {
-  const controlAttrs = { ...attrs }
-  delete controlAttrs.class
-  delete controlAttrs.style
-  return controlAttrs
+  const controlAttrs = { ...attrs };
+  delete controlAttrs.class;
+  delete controlAttrs.style;
+
+  return controlAttrs;
 }
 
 function updateValue(event: Event) {
   if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
-    model.value = event.target.value
+    model.value = event.target.value;
   }
 }
 
 defineExpose({
   element,
   focus: () => element.value?.focus(),
-})
+});
 </script>
 
 <style scoped lang="scss">

@@ -36,21 +36,21 @@
 
 <script setup lang="ts">
 defineProps<{
-  title: string
-}>()
+  title: string;
+}>();
 
-const open = defineModel<boolean>({ default: false })
-const element = useTemplateRef<HTMLDivElement>('element')
-let active = false
-let previousFocusedElement: HTMLElement | null = null
-let previousBodyOverflow = ''
-let appElement: HTMLElement | null = null
-let previousAppInert = false
+const open = defineModel<boolean>({ default: false });
+const element = useTemplateRef<HTMLDivElement>('element');
+let active = false;
+let previousFocusedElement: HTMLElement | null = null;
+let previousBodyOverflow = '';
+let appElement: HTMLElement | null = null;
+let previousAppInert = false;
 
 function getFocusableElements() {
   const controls = element.value?.querySelectorAll<HTMLElement>(
     'a[href], button, input, select, textarea, [tabindex]',
-  )
+  );
 
   return Array.from(controls ?? []).filter((control) => {
     return (
@@ -59,118 +59,127 @@ function getFocusableElements() {
       !control.closest('[inert]') &&
       control.getClientRects().length > 0 &&
       getComputedStyle(control).visibility !== 'hidden'
-    )
-  })
+    );
+  });
 }
 
 function focusInitialElement() {
-  const controls = getFocusableElements()
-  const target = controls.find((control) => control.hasAttribute('autofocus'))
-  const firstControl = target ?? controls[0] ?? element.value
-  firstControl?.focus({ preventScroll: true })
+  const controls = getFocusableElements();
+  const target = controls.find((control) => control.hasAttribute('autofocus'));
+  const firstControl = target ?? controls[0] ?? element.value;
+  firstControl?.focus({ preventScroll: true });
 }
 
 function close() {
-  open.value = false
+  open.value = false;
 }
 
 function handleKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape') {
-    event.preventDefault()
-    event.stopPropagation()
-    close()
-    return
+    event.preventDefault();
+    event.stopPropagation();
+    close();
+
+    return;
   }
 
   if (event.key !== 'Tab') {
-    return
+    return;
   }
 
-  event.preventDefault()
-  event.stopPropagation()
-  const controls = getFocusableElements()
+  event.preventDefault();
+  event.stopPropagation();
+  const controls = getFocusableElements();
+
   if (!controls.length) {
-    element.value?.focus({ preventScroll: true })
-    return
+    element.value?.focus({ preventScroll: true });
+
+    return;
   }
 
-  const currentIndex = controls.findIndex((control) => control === document.activeElement)
-  let nextIndex = 0
+  const currentIndex = controls.findIndex((control) => control === document.activeElement);
+  let nextIndex = 0;
+
   if (event.shiftKey) {
-    nextIndex = currentIndex <= 0 ? controls.length - 1 : currentIndex - 1
+    nextIndex = currentIndex <= 0 ? controls.length - 1 : currentIndex - 1;
   } else {
-    nextIndex = currentIndex === controls.length - 1 ? 0 : currentIndex + 1
+    nextIndex = currentIndex === controls.length - 1 ? 0 : currentIndex + 1;
   }
-  controls[nextIndex]?.focus({ preventScroll: true })
+
+  controls[nextIndex]?.focus({ preventScroll: true });
 }
 
 function handleFocusIn(event: FocusEvent) {
   if (event.target instanceof Node && !element.value?.contains(event.target)) {
-    focusInitialElement()
+    focusInitialElement();
   }
 }
 
 function activate() {
   if (active) {
-    return
+    return;
   }
 
-  active = true
+  active = true;
   previousFocusedElement =
-    document.activeElement instanceof HTMLElement ? document.activeElement : null
-  previousBodyOverflow = document.body.style.overflow
-  document.body.style.overflow = 'hidden'
+    document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  previousBodyOverflow = document.body.style.overflow;
+  document.body.style.overflow = 'hidden';
 
-  appElement = document.getElementById('__nuxt')
-  previousAppInert = appElement?.inert ?? false
+  appElement = document.getElementById('__nuxt');
+  previousAppInert = appElement?.inert ?? false;
+
   if (appElement) {
-    appElement.inert = true
+    appElement.inert = true;
   }
 
-  document.addEventListener('keydown', handleKeydown, true)
-  document.addEventListener('focusin', handleFocusIn)
+  document.addEventListener('keydown', handleKeydown, true);
+  document.addEventListener('focusin', handleFocusIn);
 }
 
 function deactivate() {
   if (!active) {
-    return
+    return;
   }
 
-  active = false
-  document.removeEventListener('keydown', handleKeydown, true)
-  document.removeEventListener('focusin', handleFocusIn)
-  document.body.style.overflow = previousBodyOverflow
+  active = false;
+  document.removeEventListener('keydown', handleKeydown, true);
+  document.removeEventListener('focusin', handleFocusIn);
+  document.body.style.overflow = previousBodyOverflow;
+
   if (appElement) {
-    appElement.inert = previousAppInert
-    appElement = null
+    appElement.inert = previousAppInert;
+    appElement = null;
   }
 
   if (previousFocusedElement?.isConnected && !previousFocusedElement.closest('[inert]')) {
-    previousFocusedElement.focus({ preventScroll: true })
+    previousFocusedElement.focus({ preventScroll: true });
   }
-  previousFocusedElement = null
+
+  previousFocusedElement = null;
 }
 
 async function syncOpen() {
   if (open.value) {
-    activate()
-    await nextTick()
+    activate();
+    await nextTick();
+
     if (open.value) {
-      focusInitialElement()
+      focusInitialElement();
     }
   } else {
-    deactivate()
+    deactivate();
   }
 }
 
-watch(open, syncOpen)
+watch(open, syncOpen);
 onBeforeMount(() => {
   if (open.value) {
-    activate()
+    activate();
   }
-})
-onMounted(syncOpen)
-onBeforeUnmount(deactivate)
+});
+onMounted(syncOpen);
+onBeforeUnmount(deactivate);
 </script>
 
 <style scoped lang="scss">

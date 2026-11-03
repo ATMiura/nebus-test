@@ -23,46 +23,47 @@
 </template>
 
 <script setup lang="ts">
-import type { StyleValue } from 'vue'
+import type { StyleValue } from 'vue';
 
-defineOptions({ inheritAttrs: false })
+defineOptions({ inheritAttrs: false });
 
 const props = withDefaults(
   defineProps<{
-    id?: string
-    label?: string
-    disabled?: boolean
-    size?: 'default' | 'small'
+    id?: string;
+    label?: string;
+    disabled?: boolean;
+    size?: 'default' | 'small';
   }>(),
   { disabled: false, size: 'default' },
-)
+);
 
-const model = defineModel<boolean>({ required: true })
+const model = defineModel<boolean>({ required: true });
 const emit = defineEmits<{
-  blur: [event: FocusEvent]
-}>()
-const attrs = useAttrs()
-const generatedId = useId()
-const inputId = computed(() => props.id ?? generatedId)
-const element = useTemplateRef<HTMLInputElement>('element')
+  blur: [event: FocusEvent];
+}>();
+const attrs = useAttrs();
+const generatedId = useId();
+const inputId = computed(() => props.id ?? generatedId);
+const element = useTemplateRef<HTMLInputElement>('element');
 
 function getControlAttrs() {
-  const controlAttrs = { ...attrs }
-  delete controlAttrs.class
-  delete controlAttrs.style
-  return controlAttrs
+  const controlAttrs = { ...attrs };
+  delete controlAttrs.class;
+  delete controlAttrs.style;
+
+  return controlAttrs;
 }
 
 function updateValue(event: Event) {
   if (event.target instanceof HTMLInputElement) {
-    model.value = event.target.checked
+    model.value = event.target.checked;
   }
 }
 
 defineExpose({
   element,
   focus: () => element.value?.focus(),
-})
+});
 </script>
 
 <style scoped lang="scss">

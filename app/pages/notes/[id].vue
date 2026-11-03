@@ -58,182 +58,222 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
-import { useNotesStore } from '~/stores/notes'
-import type { Note } from '~/types/note'
-import { cloneNote, getNoteValidationError } from '~/utils/note'
+import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router';
+import { useNotesStore } from '~/stores/notes';
+import type { Note } from '~/types/note';
+import { cloneNote, getNoteValidationError } from '~/utils/note';
 
-const route = useRoute()
-const notesStore = useNotesStore()
-const isNewNote = computed(() => route.params.id === 'new')
-const draft = ref<Note | null>(null)
-const initialSnapshot = ref('')
-const showErrors = ref(false)
-const message = ref('')
-const messageVariant = ref<'error' | 'success'>('success')
-const confirmationOpen = ref(false)
-const confirmationKind = ref<'discard' | 'delete'>('discard')
-let pendingConfirmation: Promise<boolean> | null = null
-let resolveConfirmation: ((confirmed: boolean) => void) | null = null
+const route = useRoute();
+const notesStore = useNotesStore();
+const isNewNote = computed(() => route.params.id === 'new');
+const draft = ref<Note | null>(null);
+const initialSnapshot = ref('');
+const showErrors = ref(false);
+const message = ref('');
+const messageVariant = ref<'error' | 'success'>('success');
+const confirmationOpen = ref(false);
+const confirmationKind = ref<'discard' | 'delete'>('discard');
+let pendingConfirmation: Promise<boolean> | null = null;
+let resolveConfirmation: ((confirmed: boolean) => void) | null = null;
 const isDirty = computed(
   () => draft.value !== null && JSON.stringify(draft.value) !== initialSnapshot.value,
-)
+);
 const isDeleted = computed(
   () =>
     !isNewNote.value &&
     draft.value !== null &&
     !notesStore.notes.some((note) => note.id === draft.value?.id),
-)
+);
 const confirmationMessage = computed(() => {
   if (confirmationKind.value === 'delete') {
-    return 'Заметка и все её задачи будут удалены без возможности восстановления.'
+    return 'Заметка и все её задачи будут удалены без возможности восстановления.';
   }
-  return 'Несохранённые изменения будут потеряны.'
-})
+
+  return 'Несохранённые изменения будут потеряны.';
+});
 const pageTitle = computed(() => {
   if (isNewNote.value) {
-    return 'Новая заметка'
+    return 'Новая заметка';
   }
-  return draft.value ? 'Редактирование заметки' : 'Заметка не найдена'
-})
+
+  return draft.value ? 'Редактирование заметки' : 'Заметка не найдена';
+});
 
 useHead({
   title: pageTitle,
-})
+});
+
 function loadDraft() {
-  const id = String(route.params.id)
+  const id = String(route.params.id);
+
   if (id === 'new') {
-    draft.value = { id: 'new', title: '', todos: [] }
+    draft.value = { id: 'new', title: '', todos: [] };
   } else {
-    draft.value = notesStore.getNote(id)
+    draft.value = notesStore.getNote(id);
   }
-  initialSnapshot.value = JSON.stringify(draft.value)
-  showErrors.value = false
-  message.value = ''
+
+  initialSnapshot.value = JSON.stringify(draft.value);
+  showErrors.value = false;
+  message.value = '';
 }
-watch(() => route.params.id, loadDraft, { immediate: true })
+
+watch(() => route.params.id, loadDraft, { immediate: true });
+
 function retryLoading() {
-  notesStore.load()
+  notesStore.load();
+
   if (!draft.value && !notesStore.error) {
-    loadDraft()
+    loadDraft();
   }
 }
+
 function requestConfirmation(kind: 'discard' | 'delete' = 'discard'): Promise<boolean> {
   if (pendingConfirmation) {
     if (confirmationKind.value !== kind) {
-      return Promise.resolve(false)
+      return Promise.resolve(false);
     }
-    return pendingConfirmation
+
+    return pendingConfirmation;
   }
-  confirmationKind.value = kind
-  confirmationOpen.value = true
+
+  confirmationKind.value = kind;
+  confirmationOpen.value = true;
   pendingConfirmation = new Promise<boolean>((resolve) => {
-    resolveConfirmation = resolve
-  })
-  return pendingConfirmation
+    resolveConfirmation = resolve;
+  });
+
+  return pendingConfirmation;
 }
+
 function finishConfirmation(confirmed: boolean) {
-  confirmationOpen.value = false
-  const resolve = resolveConfirmation
-  resolveConfirmation = null
-  pendingConfirmation = null
-  resolve?.(confirmed)
+  confirmationOpen.value = false;
+  const resolve = resolveConfirmation;
+  resolveConfirmation = null;
+  pendingConfirmation = null;
+  resolve?.(confirmed);
 }
+
 async function saveNote() {
   if (!draft.value || !isDirty.value || isDeleted.value) {
-    return
+    return;
   }
-  showErrors.value = true
-  message.value = getNoteValidationError(draft.value)
-  messageVariant.value = 'error'
+
+  showErrors.value = true;
+  message.value = getNoteValidationError(draft.value);
+  messageVariant.value = 'error';
+
   if (message.value) {
-    return
+    return;
   }
-  let savedNote: Note | null
+
+  let savedNote: Note | null;
+
   if (isNewNote.value) {
-    savedNote = notesStore.createNote(draft.value)
+    savedNote = notesStore.createNote(draft.value);
   } else {
-    savedNote = notesStore.updateNote(draft.value)
+    savedNote = notesStore.updateNote(draft.value);
   }
+
   if (!savedNote) {
-    return
+    return;
   }
-  draft.value = cloneNote(savedNote)
-  initialSnapshot.value = JSON.stringify(draft.value)
-  showErrors.value = false
+
+  draft.value = cloneNote(savedNote);
+  initialSnapshot.value = JSON.stringify(draft.value);
+  showErrors.value = false;
+
   if (isNewNote.value) {
-    await navigateTo(`/notes/${savedNote.id}`, { replace: true })
+    await navigateTo(`/notes/${savedNote.id}`, { replace: true });
   }
-  messageVariant.value = 'success'
-  message.value = 'Заметка сохранена.'
+
+  messageVariant.value = 'success';
+  message.value = 'Заметка сохранена.';
 }
+
 async function deleteNote() {
   if (!draft.value || isNewNote.value || isDeleted.value) {
-    return
+    return;
   }
-  const confirmed = await requestConfirmation('delete')
+
+  const confirmed = await requestConfirmation('delete');
+
   if (confirmed && draft.value && notesStore.deleteNote(draft.value.id)) {
-    draft.value = null
-    initialSnapshot.value = JSON.stringify(null)
-    await navigateTo('/')
+    draft.value = null;
+    initialSnapshot.value = JSON.stringify(null);
+    await navigateTo('/');
   }
 }
+
 async function cancelEditing() {
   if (!isDirty.value) {
-    return
+    return;
   }
-  const confirmed = await requestConfirmation()
+
+  const confirmed = await requestConfirmation();
+
   if (confirmed) {
-    draft.value = JSON.parse(initialSnapshot.value) as Note | null
-    showErrors.value = false
-    message.value = ''
+    draft.value = JSON.parse(initialSnapshot.value) as Note | null;
+    showErrors.value = false;
+    message.value = '';
   }
 }
+
 onBeforeRouteLeave(() => {
   if (isDirty.value) {
-    return requestConfirmation()
+    return requestConfirmation();
   }
-  return true
-})
+
+  return true;
+});
 
 onBeforeRouteUpdate((to, from) => {
   if (to.params.id !== from.params.id && isDirty.value) {
-    return requestConfirmation()
+    return requestConfirmation();
   }
-  return true
-})
+
+  return true;
+});
 
 onBeforeUnmount(() => {
-  finishConfirmation(false)
-})
+  finishConfirmation(false);
+});
+
 function updateTitle(value: string) {
-  message.value = ''
+  message.value = '';
+
   if (draft.value) {
-    draft.value.title = value
+    draft.value.title = value;
   }
 }
+
 function addTodo() {
-  message.value = ''
-  draft.value?.todos.push({ id: crypto.randomUUID(), text: '', completed: false })
+  message.value = '';
+  draft.value?.todos.push({ id: crypto.randomUUID(), text: '', completed: false });
 }
+
 function updateTodoText(id: string, value: string) {
-  message.value = ''
-  const todo = draft.value?.todos.find((item) => item.id === id)
+  message.value = '';
+  const todo = draft.value?.todos.find((item) => item.id === id);
+
   if (todo) {
-    todo.text = value
+    todo.text = value;
   }
 }
+
 function updateTodoCompleted(id: string, value: boolean) {
-  message.value = ''
-  const todo = draft.value?.todos.find((item) => item.id === id)
+  message.value = '';
+  const todo = draft.value?.todos.find((item) => item.id === id);
+
   if (todo) {
-    todo.completed = value
+    todo.completed = value;
   }
 }
+
 function removeTodo(id: string) {
-  message.value = ''
+  message.value = '';
+
   if (draft.value) {
-    draft.value.todos = draft.value.todos.filter((todo) => todo.id !== id)
+    draft.value.todos = draft.value.todos.filter((todo) => todo.id !== id);
   }
 }
 </script>

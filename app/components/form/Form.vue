@@ -31,23 +31,23 @@
 <script setup lang="ts">
 withDefaults(
   defineProps<{
-    variant?: 'default' | 'panel'
-    title?: string
+    variant?: 'default' | 'panel';
+    title?: string;
   }>(),
   { variant: 'default' },
-)
+);
 
 const emit = defineEmits<{
-  submit: [event: SubmitEvent]
-}>()
+  submit: [event: SubmitEvent];
+}>();
 
-const element = useTemplateRef<HTMLFormElement>('element')
+const element = useTemplateRef<HTMLFormElement>('element');
 
 defineExpose({
   element,
   checkValidity: () => element.value?.checkValidity() ?? false,
   reportValidity: () => element.value?.reportValidity() ?? false,
-})
+});
 </script>
 
 <style scoped lang="scss">
