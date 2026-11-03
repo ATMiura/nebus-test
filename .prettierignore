@@ -1,0 +1,9 @@
+node_modules/
+.nuxt/
+.output/
+.data/
+coverage/
+dist/
+tmp/
+package-lock.json
+redirect.pdf

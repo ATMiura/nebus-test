@@ -8,13 +8,16 @@
     "build": "nuxt build",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "typecheck": "nuxt typecheck"
+    "typecheck": "nuxt typecheck",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "devDependencies": {
+    "prettier": "3.9.10",
     "sass": "^1.107.1",
     "typescript": "^6.0.3",
     "vue-tsc": "^3.3.14"
