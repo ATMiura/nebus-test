@@ -44,7 +44,7 @@
 
     <template #actions>
       <Button variant="primary" type="submit" disabled>Сохранить</Button>
-      <Button disabled>Отменить редактирование</Button>
+      <Button :disabled="!isDirty" @click="emit('cancel')">Отменить редактирование</Button>
       <Button v-if="!isNew" variant="danger" disabled>Удалить заметку</Button>
     </template>
   </Form>
@@ -67,6 +67,7 @@ const emit = defineEmits<{
   'update-todo-text': [id: string, value: string]
   'update-todo-completed': [id: string, value: boolean]
   'remove-todo': [id: string]
+  cancel: []
 }>()
 
 const todoRows = useTemplateRef<InstanceType<typeof TodoEditorRow>[]>('todoRows')

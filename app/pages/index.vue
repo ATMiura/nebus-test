@@ -19,6 +19,10 @@
 <script setup lang="ts">
 import { demoNotes } from '~/data/demo-notes'
 
+useHead({
+  title: 'Мои заметки',
+})
+
 const notes = demoNotes
 </script>
 

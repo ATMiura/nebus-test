@@ -6,7 +6,10 @@
         <div class="app-header__description">Задачи и планы в одном месте</div>
       </div>
 
-      <Button variant="primary" to="/notes/new"> Создать заметку </Button>
+      <Button class="app-header__create" variant="primary" to="/notes/new" title="Создать заметку">
+        <span class="app-header__create-icon">+</span>
+        <span class="app-header__create-text">Создать заметку</span>
+      </Button>
     </Container>
   </div>
 </template>
@@ -42,9 +45,40 @@
     }
   }
 
+  &__create-icon {
+    font-size: 24px;
+    line-height: 1;
+  }
+
+  &__create-text {
+    display: none;
+  }
+
   &__description {
     margin: 8px 0 0;
     color: var(--color-muted);
+  }
+}
+
+.app-header .app-header__create {
+  flex-shrink: 0;
+  width: 44px;
+  padding: 0;
+  white-space: nowrap;
+}
+
+@media (min-width: 601px) {
+  .app-header .app-header__create {
+    width: auto;
+    padding: 10px 20px;
+  }
+
+  .app-header__create-icon {
+    display: none;
+  }
+
+  .app-header__create-text {
+    display: inline;
   }
 }
 
@@ -53,9 +87,7 @@
     padding-block: 20px;
 
     &__content {
-      align-items: stretch;
-      flex-direction: column;
-      gap: 20px;
+      gap: 16px;
     }
   }
 }

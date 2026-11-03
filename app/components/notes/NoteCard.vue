@@ -19,7 +19,7 @@
     <div class="note-card__actions">
       <Button :to="`/notes/${note.id}`"> Изменить </Button>
 
-      <Button variant="danger"> Удалить </Button>
+      <Button variant="danger" disabled>Удалить</Button>
     </div>
   </div>
 </template>

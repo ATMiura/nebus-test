@@ -1,6 +1,12 @@
 export default defineNuxtConfig({
   ssr: false,
 
+  app: {
+    head: {
+      meta: [{ name: 'viewport', content: 'width=320, initial-scale=1' }],
+    },
+  },
+
   components: [
     {
       path: '~/components',

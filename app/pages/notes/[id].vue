@@ -13,6 +13,7 @@
         @update-todo-text="updateTodoText"
         @update-todo-completed="updateTodoCompleted"
         @remove-todo="removeTodo"
+        @cancel="cancelEditing"
       />
 
       <EmptyState
@@ -25,10 +26,22 @@
         </Button>
       </EmptyState>
     </Container>
+
+    <TodoConfirm
+      :open="confirmationOpen"
+      title="Отменить изменения"
+      message="Несохранённые изменения будут потеряны."
+      confirm-text="Да, отменить изменения"
+      cancel-text="Продолжить редактирование"
+      confirm-variant="danger"
+      @confirm="finishConfirmation(true)"
+      @cancel="finishConfirmation(false)"
+    />
   </main>
 </template>
 
 <script setup lang="ts">
+import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
 import { demoNotes } from '~/data/demo-notes'
 import type { Note } from '~/types/note'
 
@@ -36,6 +49,9 @@ const route = useRoute()
 const isNewNote = computed(() => route.params.id === 'new')
 const draft = ref<Note | null>(null)
 const initialSnapshot = ref('')
+const confirmationOpen = ref(false)
+let pendingConfirmation: Promise<boolean> | null = null
+let resolveConfirmation: ((confirmed: boolean) => void) | null = null
 const isDirty = computed(
   () => draft.value !== null && JSON.stringify(draft.value) !== initialSnapshot.value,
 )
@@ -46,20 +62,73 @@ const pageTitle = computed(() => {
   return draft.value ? 'Редактирование заметки' : 'Заметка не найдена'
 })
 
+useHead({
+  title: pageTitle,
+})
+
 watch(
   () => route.params.id,
   (id) => {
     const source = demoNotes.find((note) => note.id === id)
-    draft.value =
-      id === 'new'
-        ? { id: 'new', title: '', todos: [] }
-        : source
-          ? { ...source, todos: source.todos.map((todo) => ({ ...todo })) }
-          : null
+    if (id === 'new') {
+      draft.value = { id: 'new', title: '', todos: [] }
+    } else if (source) {
+      draft.value = {
+        ...source,
+        todos: source.todos.map((todo) => ({ ...todo })),
+      }
+    } else {
+      draft.value = null
+    }
     initialSnapshot.value = JSON.stringify(draft.value)
   },
   { immediate: true },
 )
+
+function requestConfirmation() {
+  if (pendingConfirmation) {
+    return pendingConfirmation
+  }
+
+  confirmationOpen.value = true
+  pendingConfirmation = new Promise<boolean>((resolve) => {
+    resolveConfirmation = resolve
+  })
+  return pendingConfirmation
+}
+
+function finishConfirmation(confirmed: boolean) {
+  confirmationOpen.value = false
+  const resolve = resolveConfirmation
+  resolveConfirmation = null
+  pendingConfirmation = null
+  resolve?.(confirmed)
+}
+
+async function cancelEditing() {
+  const confirmed = await requestConfirmation()
+  if (confirmed) {
+    draft.value = JSON.parse(initialSnapshot.value) as Note | null
+  }
+}
+
+onBeforeRouteLeave(() => {
+  if (isDirty.value) {
+    return requestConfirmation()
+  }
+  return true
+})
+
+onBeforeRouteUpdate((to, from) => {
+  if (to.params.id !== from.params.id && isDirty.value) {
+    return requestConfirmation()
+  }
+  return true
+})
+
+onBeforeUnmount(() => {
+  finishConfirmation(false)
+})
 
 function updateTitle(value: string) {
   if (draft.value) {
