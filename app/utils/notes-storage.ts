@@ -44,33 +44,34 @@ function isNote(value: unknown): value is Note {
   return new Set(value.todos.map((todo) => todo.id)).size === value.todos.length;
 }
 
-export function readSavedNotes(storage: Storage): SavedNotes | null {
-  let raw: string | null;
-
-  try {
-    raw = storage.getItem(NOTES_STORAGE_KEY);
-  } catch {
-    throw new Error('Не удалось прочитать заметки. Проверьте доступ к хранилищу браузера.');
-  }
-
-  if (raw === null) {
-    return null;
-  }
-
+export function readSavedNotes(): { data: SavedNotes | null; error: string } {
   let data: unknown;
 
   try {
+    const raw = localStorage.getItem(NOTES_STORAGE_KEY);
+
+    if (raw === null) {
+      return { data: null, error: '' };
+    }
+
     data = JSON.parse(raw);
   } catch {
-    throw new Error('Сохранённые заметки повреждены. Исходные данные оставлены в хранилище.');
+    return {
+      data: null,
+      error:
+        'Не удалось прочитать заметки: данные повреждены или хранилище недоступно. Исходные данные не изменены.',
+    };
   }
 
   if (!isRecord(data)) {
-    throw new Error('Неверный формат сохранённых заметок. Данные не изменены.');
+    return { data: null, error: 'Неверный формат сохранённых заметок. Данные не изменены.' };
   }
 
   if (data.version !== NOTES_SCHEMA_VERSION) {
-    throw new Error('Версия сохранённых заметок не поддерживается. Данные не изменены.');
+    return {
+      data: null,
+      error: 'Версия сохранённых заметок не поддерживается. Данные не изменены.',
+    };
   }
 
   if (
@@ -80,23 +81,31 @@ export function readSavedNotes(storage: Storage): SavedNotes | null {
     !Number.isSafeInteger(data.nextId) ||
     data.nextId < 1
   ) {
-    throw new Error('Неверный формат сохранённых заметок. Данные не изменены.');
+    return { data: null, error: 'Неверный формат сохранённых заметок. Данные не изменены.' };
   }
 
   const nextId = data.nextId;
   const ids = data.notes.map((note) => note.id);
 
   if (new Set(ids).size !== ids.length || data.notes.some((note) => Number(note.id) >= nextId)) {
-    throw new Error('Неверные идентификаторы сохранённых заметок. Данные не изменены.');
+    return {
+      data: null,
+      error: 'Неверные идентификаторы сохранённых заметок. Данные не изменены.',
+    };
   }
 
-  return { version: data.version, nextId: data.nextId, notes: data.notes };
+  return {
+    data: { version: data.version, nextId: data.nextId, notes: data.notes },
+    error: '',
+  };
 }
 
-export function writeSavedNotes(storage: Storage, data: SavedNotes) {
+export function writeSavedNotes(data: SavedNotes): string {
   try {
-    storage.setItem(NOTES_STORAGE_KEY, JSON.stringify(data));
+    localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(data));
+
+    return '';
   } catch {
-    throw new Error('Не удалось сохранить заметки. Хранилище браузера недоступно или заполнено.');
+    return 'Не удалось сохранить заметки. Хранилище браузера недоступно или заполнено.';
   }
 }

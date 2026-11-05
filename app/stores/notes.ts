@@ -22,57 +22,54 @@ export const useNotesStore = defineStore('notes', () => {
     error.value = '';
   }
 
-  function setError(cause: unknown) {
-    error.value =
-      cause instanceof Error ? cause.message : 'Не удалось выполнить действие с заметками.';
-  }
-
-  function getStorage(): Storage {
-    try {
-      return localStorage;
-    } catch {
-      throw new Error(
-        'Хранилище браузера недоступно. Разрешите сохранение данных и повторите загрузку.',
-      );
-    }
-  }
-
   function load() {
-    try {
-      const storage = getStorage();
+    const result = readSavedNotes();
 
-      let data = readSavedNotes(storage);
+    error.value = result.error;
 
-      if (data === null) {
-        data = {
-          version: NOTES_SCHEMA_VERSION,
-          nextId: Math.max(0, ...demoNotes.map((note) => Number(note.id))) + 1,
-          notes: demoNotes.map(cloneNote),
-        };
-        writeSavedNotes(storage, data);
-      }
-
-      applyData(data);
-    } catch (cause) {
-      setError(cause);
+    if (error.value) {
+      return;
     }
+
+    let data = result.data;
+
+    if (data === null) {
+      data = {
+        version: NOTES_SCHEMA_VERSION,
+        nextId: Math.max(0, ...demoNotes.map((note) => Number(note.id))) + 1,
+        notes: demoNotes.map(cloneNote),
+      };
+      error.value = writeSavedNotes(data);
+
+      if (error.value) {
+        return;
+      }
+    }
+
+    applyData(data);
   }
 
-  function readLatest(): SavedNotes {
-    const data = readSavedNotes(getStorage());
+  function readLatest(): SavedNotes | null {
+    const result = readSavedNotes();
 
-    if (data) {
-      return data;
+    error.value = result.error;
+
+    if (error.value) {
+      return null;
+    }
+
+    if (result.data) {
+      return result.data;
     }
 
     return { version: NOTES_SCHEMA_VERSION, nextId, notes: [] };
   }
 
   function refresh() {
-    try {
-      applyData(readLatest());
-    } catch (cause) {
-      setError(cause);
+    const data = readLatest();
+
+    if (data) {
+      applyData(data);
     }
   }
 
@@ -87,84 +84,97 @@ export const useNotesStore = defineStore('notes', () => {
   }
 
   function createNote(draft: Note): Note | null {
-    try {
-      const validationError = getNoteValidationError(draft);
+    error.value = getNoteValidationError(draft);
 
-      if (validationError) {
-        throw new Error(validationError);
-      }
+    if (error.value) {
+      return null;
+    }
 
-      const data = readLatest();
+    const data = readLatest();
 
-      if (!Number.isSafeInteger(data.nextId + 1)) {
-        throw new Error('Не удалось создать заметку: закончились доступные идентификаторы.');
-      }
+    if (!data) {
+      return null;
+    }
 
-      const note = cloneNote(draft);
-
-      note.id = String(data.nextId);
-      data.nextId += 1;
-      data.notes.push(note);
-      writeSavedNotes(getStorage(), data);
-      applyData(data);
-
-      return cloneNote(note);
-    } catch (cause) {
-      setError(cause);
+    if (!Number.isSafeInteger(data.nextId + 1)) {
+      error.value = 'Не удалось создать заметку: закончились доступные идентификаторы.';
 
       return null;
     }
+
+    const note = cloneNote(draft);
+
+    note.id = String(data.nextId);
+    data.nextId += 1;
+    data.notes.push(note);
+    error.value = writeSavedNotes(data);
+
+    if (error.value) {
+      return null;
+    }
+
+    applyData(data);
+
+    return cloneNote(note);
   }
 
   function updateNote(draft: Note): Note | null {
-    try {
-      const data = readLatest();
-      const index = data.notes.findIndex((note) => note.id === draft.id);
+    const data = readLatest();
 
-      if (index === -1) {
-        applyData(data);
+    if (!data) {
+      return null;
+    }
 
-        throw new Error('Эта заметка уже удалена. Сохранить изменения в неё нельзя.');
-      }
+    const index = data.notes.findIndex((note) => note.id === draft.id);
 
-      const validationError = getNoteValidationError(draft);
-
-      if (validationError) {
-        throw new Error(validationError);
-      }
-
-      const note = cloneNote(draft);
-
-      data.notes[index] = note;
-      writeSavedNotes(getStorage(), data);
+    if (index === -1) {
       applyData(data);
-
-      return cloneNote(note);
-    } catch (cause) {
-      setError(cause);
+      error.value = 'Эта заметка уже удалена. Сохранить изменения в неё нельзя.';
 
       return null;
     }
+
+    error.value = getNoteValidationError(draft);
+
+    if (error.value) {
+      return null;
+    }
+
+    const note = cloneNote(draft);
+
+    data.notes[index] = note;
+    error.value = writeSavedNotes(data);
+
+    if (error.value) {
+      return null;
+    }
+
+    applyData(data);
+
+    return cloneNote(note);
   }
 
   function deleteNote(id: string): boolean {
-    try {
-      const data = readLatest();
-      const remainingNotes = data.notes.filter((note) => note.id !== id);
+    const data = readLatest();
 
-      if (remainingNotes.length !== data.notes.length) {
-        data.notes = remainingNotes;
-        writeSavedNotes(getStorage(), data);
-      }
-
-      applyData(data);
-
-      return true;
-    } catch (cause) {
-      setError(cause);
-
+    if (!data) {
       return false;
     }
+
+    const remainingNotes = data.notes.filter((note) => note.id !== id);
+
+    if (remainingNotes.length !== data.notes.length) {
+      data.notes = remainingNotes;
+      error.value = writeSavedNotes(data);
+
+      if (error.value) {
+        return false;
+      }
+    }
+
+    applyData(data);
+
+    return true;
   }
 
   return { notes, error, load, refresh, getNote, createNote, updateNote, deleteNote };
