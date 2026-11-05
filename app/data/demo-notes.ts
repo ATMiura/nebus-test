@@ -6,7 +6,7 @@ export const demoNotes: Note[] = [
     title: 'Планы на неделю',
     todos: [
       { id: '1', text: 'Обновить резюме', completed: true },
-      { id: '2', text: 'Выполнить тестовое задание', completed: false },
+      { id: '2', text: 'Выполнить тестовое задание', completed: true },
       { id: '3', text: 'Подготовиться к собеседованию', completed: false },
       { id: '4', text: 'Разобрать рабочие заметки', completed: false },
     ],

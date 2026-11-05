@@ -81,7 +81,7 @@ defineExpose({
     flex-shrink: 0;
     width: 20px;
     height: 20px;
-    margin: 2px 0 0;
+    margin: 0;
     accent-color: var(--color-primary);
     cursor: inherit;
   }
@@ -94,7 +94,6 @@ defineExpose({
   &--small &__control {
     width: 18px;
     height: 18px;
-    margin-top: 3px;
   }
 
   &--disabled {
