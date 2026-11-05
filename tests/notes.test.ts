@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import { useNotesStore } from '../app/stores/notes';
+import { demoNotes } from '../app/data/demo-notes';
 import type { Note } from '../app/types/note';
 import { NOTES_SCHEMA_VERSION, NOTES_STORAGE_KEY } from '../app/utils/notes-storage';
 
@@ -37,10 +38,10 @@ describe('Стор заметок', () => {
 
     store.load();
 
-    expect(store.notes.map((note) => note.id)).toEqual(['1', '2', '3']);
+    expect(store.notes.map((note) => note.id)).toEqual(demoNotes.map((note) => note.id));
     expect(JSON.parse(storage.getItem(NOTES_STORAGE_KEY)!)).toMatchObject({
       version: NOTES_SCHEMA_VERSION,
-      nextId: 4,
+      nextId: 21,
     });
 
     store.load();
@@ -76,7 +77,7 @@ describe('Стор заметок', () => {
 
     const saved = store.createNote(draft);
 
-    expect(saved).toEqual({ ...draft, id: '4' });
+    expect(saved).toEqual({ ...draft, id: '21' });
     expect(draft.id).toBe('new');
 
     setActivePinia(createPinia());
@@ -85,7 +86,7 @@ describe('Стор заметок', () => {
 
     reloaded.load();
 
-    expect(reloaded.getNote('4')).toEqual(saved);
+    expect(reloaded.getNote('21')).toEqual(saved);
   });
 
   it('Сохраняет изменения заметки и её задач после повторной загрузки', () => {

@@ -10,7 +10,7 @@
 
       <div v-if="notesStore.notes.length" class="notes-grid">
         <NoteCard
-          v-for="note in notesStore.notes"
+          v-for="note in visibleNotes"
           :key="note.id"
           :note="note"
           @remove="selectedNote = note"
@@ -22,6 +22,7 @@
         title="Здесь будут ваши заметки"
         description="Создайте первую заметку и добавьте в неё задачи."
       />
+      <Pagination :current-page="currentPage" :page-count="pageCount" />
     </Container>
 
     <TodoConfirm
@@ -44,8 +45,48 @@ useHead({
   title: 'Мои заметки',
 });
 
+const route = useRoute();
+const router = useRouter();
 const notesStore = useNotesStore();
+const pageSize = 9;
 const selectedNote = ref<Note | null>(null);
+
+const pageCount = computed(() => Math.max(1, Math.ceil(notesStore.notes.length / pageSize)));
+
+const currentPage = computed(() => {
+  const value = route.query.page;
+
+  if (typeof value !== 'string' || !/^\d+$/.test(value)) {
+    return 1;
+  }
+
+  return Math.min(pageCount.value, Math.max(1, Number(value)));
+});
+
+const visibleNotes = computed(() => {
+  const start = (currentPage.value - 1) * pageSize;
+
+  return notesStore.notes.slice(start, start + pageSize);
+});
+
+watch(
+  [() => route.query.page, pageCount],
+  ([page]) => {
+    if (page === undefined) {
+      return;
+    }
+
+    const normalizedPage = currentPage.value === 1 ? undefined : String(currentPage.value);
+
+    if (page !== normalizedPage) {
+      router.replace({
+        query: { ...route.query, page: normalizedPage },
+        hash: route.hash,
+      });
+    }
+  },
+  { immediate: true },
+);
 
 function deleteNote() {
   if (selectedNote.value) {

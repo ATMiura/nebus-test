@@ -24,4 +24,13 @@ export const demoNotes: Note[] = [
     title: 'Идеи',
     todos: [],
   },
+  ...Array.from({ length: 17 }, (_, index) => {
+    const id = String(index + 4);
+
+    return {
+      id,
+      title: `Заметка ${id}`,
+      todos: [{ id: '1', text: `Задача ${id}`, completed: false }],
+    };
+  }),
 ];
