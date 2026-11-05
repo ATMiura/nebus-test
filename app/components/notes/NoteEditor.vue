@@ -1,8 +1,8 @@
 <template>
   <Form class="note-editor" variant="panel" title="Содержимое заметки" @submit="emit('save')">
     <template #header-actions>
-      <Button disabled>Отменить шаг</Button>
-      <Button disabled>Повторить</Button>
+      <Button :disabled="!canUndo" @click="emit('undo')">Отменить шаг</Button>
+      <Button :disabled="!canRedo" @click="emit('redo')">Повторить</Button>
     </template>
 
     <Input
@@ -11,6 +11,7 @@
       label="Название заметки"
       placeholder="Например, планы на неделю"
       @update:model-value="emit('update-title', $event)"
+      @blur="emit('blur')"
     />
 
     <section class="note-editor__tasks">
@@ -31,6 +32,7 @@
             @update:text="emit('update-todo-text', todo.id, $event)"
             @update:completed="emit('update-todo-completed', todo.id, $event)"
             @remove="removeTodo(todo.id)"
+            @blur="emit('blur')"
           />
         </li>
       </ul>
@@ -63,6 +65,8 @@ const props = defineProps<{
   note: Note;
   isNew: boolean;
   isDirty: boolean;
+  canUndo: boolean;
+  canRedo: boolean;
   unavailable: boolean;
   showErrors: boolean;
 }>();
@@ -73,6 +77,9 @@ const emit = defineEmits<{
   'update-todo-text': [id: string, value: string];
   'update-todo-completed': [id: string, value: boolean];
   'remove-todo': [id: string];
+  undo: [];
+  redo: [];
+  blur: [];
   cancel: [];
   save: [];
   delete: [];
@@ -89,6 +96,7 @@ function focusTodo(id: string) {
 async function addTodo() {
   emit('add-todo');
   await nextTick();
+
   const todo = props.note.todos.at(-1);
 
   if (todo) {
@@ -98,8 +106,10 @@ async function addTodo() {
 
 async function removeTodo(id: string) {
   const index = props.note.todos.findIndex((todo) => todo.id === id);
+
   emit('remove-todo', id);
   await nextTick();
+
   const nextTodo = props.note.todos[Math.max(0, Math.min(index, props.note.todos.length - 1))];
 
   if (nextTodo) {

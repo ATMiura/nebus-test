@@ -39,6 +39,26 @@ export default [
           prev: 'block-like',
           next: '*',
         },
+        {
+          blankLine: 'always',
+          prev: ['const', 'let', 'var'],
+          next: '*',
+        },
+        {
+          blankLine: 'always',
+          prev: '*',
+          next: ['const', 'let', 'var'],
+        },
+        {
+          blankLine: 'any',
+          prev: 'singleline-const',
+          next: 'singleline-const',
+        },
+        {
+          blankLine: 'any',
+          prev: 'singleline-let',
+          next: 'singleline-let',
+        },
       ],
     },
   },

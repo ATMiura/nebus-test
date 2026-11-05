@@ -34,6 +34,7 @@ beforeEach(() => {
 describe('Стор заметок', () => {
   it('Загружает начальные заметки один раз', () => {
     const store = useNotesStore();
+
     store.load();
 
     expect(store.notes.map((note) => note.id)).toEqual(['1', '2', '3']);
@@ -49,7 +50,9 @@ describe('Стор заметок', () => {
 
   it('Правки черновика не меняют сохранённую заметку', () => {
     const store = useNotesStore();
+
     store.load();
+
     const original = store.getNote('1')!;
     const draft = store.getNote('1')!;
     const savedData = storage.getItem(NOTES_STORAGE_KEY);
@@ -66,7 +69,9 @@ describe('Стор заметок', () => {
 
   it('Создаёт заметку с новым числовым ID', () => {
     const store = useNotesStore();
+
     store.load();
+
     const draft = makeDraft();
 
     const saved = store.createNote(draft);
@@ -75,7 +80,9 @@ describe('Стор заметок', () => {
     expect(draft.id).toBe('new');
 
     setActivePinia(createPinia());
+
     const reloaded = useNotesStore();
+
     reloaded.load();
 
     expect(reloaded.getNote('4')).toEqual(saved);
@@ -83,7 +90,9 @@ describe('Стор заметок', () => {
 
   it('Сохраняет изменения заметки и её задач после повторной загрузки', () => {
     const store = useNotesStore();
+
     store.load();
+
     const draft = store.getNote('1')!;
 
     draft.title = 'Новое название';
@@ -95,7 +104,9 @@ describe('Стор заметок', () => {
     expect(store.updateNote(draft)).not.toBeNull();
 
     setActivePinia(createPinia());
+
     const reloaded = useNotesStore();
+
     reloaded.load();
 
     expect(reloaded.getNote('1')).toEqual(draft);
@@ -103,6 +114,7 @@ describe('Стор заметок', () => {
 
   it('Удалённые заметки не появляются после повторной загрузки', () => {
     const store = useNotesStore();
+
     store.load();
 
     for (const note of [...store.notes]) {
@@ -110,7 +122,9 @@ describe('Стор заметок', () => {
     }
 
     setActivePinia(createPinia());
+
     const reloaded = useNotesStore();
+
     reloaded.load();
 
     expect(reloaded.notes).toEqual([]);
@@ -119,8 +133,11 @@ describe('Стор заметок', () => {
 
   it('Не сохраняет заметку с пустым названием', () => {
     const store = useNotesStore();
+
     store.load();
+
     const draft = store.getNote('1')!;
+
     draft.title = '   ';
 
     expect(store.createNote({ ...makeDraft(), title: '' })).toBeNull();
@@ -131,9 +148,12 @@ describe('Стор заметок', () => {
 
   it('Не сохраняет задачу с пустым текстом', () => {
     const store = useNotesStore();
+
     store.load();
+
     const original = store.getNote('1')!;
     const draft = store.getNote('1')!;
+
     draft.todos[0]!.text = '   ';
 
     expect(store.updateNote(draft)).toBeNull();
@@ -146,8 +166,10 @@ describe('Стор заметок', () => {
 describe('Хранение заметок', () => {
   it('Не перезаписывает повреждённые данные', () => {
     const raw = '{неверный JSON';
+
     storage.setItem(NOTES_STORAGE_KEY, raw);
     storage.setItem.mockClear();
+
     const store = useNotesStore();
 
     store.load();
@@ -161,8 +183,10 @@ describe('Хранение заметок', () => {
 
   it('Сообщает о неподдерживаемой версии данных', () => {
     const raw = JSON.stringify({ version: 99, nextId: 1, notes: [] });
+
     storage.setItem(NOTES_STORAGE_KEY, raw);
     storage.setItem.mockClear();
+
     const store = useNotesStore();
 
     store.load();
@@ -174,10 +198,13 @@ describe('Хранение заметок', () => {
 
   it('Ошибка записи не меняет сохранённые заметки', () => {
     const store = useNotesStore();
+
     store.load();
+
     const original = store.getNote('1')!;
     const savedData = storage.getItem(NOTES_STORAGE_KEY);
     const draft = store.getNote('1')!;
+
     draft.title = 'Новое название';
     storage.setItem.mockImplementation(() => {
       throw new Error('Хранилище заполнено');
@@ -195,15 +222,22 @@ describe('Хранение заметок', () => {
 describe('Синхронизация вкладок', () => {
   it('Подхватывает изменения из другой вкладки', () => {
     const first = useNotesStore();
+
     first.load();
     setActivePinia(createPinia());
+
     const second = useNotesStore();
+
     second.load();
+
     const draft = second.getNote('1')!;
+
     draft.title = 'Название из другой вкладки';
 
     expect(second.updateNote(draft)).not.toBeNull();
+
     const writes = storage.setItem.mock.calls.length;
+
     first.refresh();
 
     expect(first.getNote('1')!.title).toBe(draft.title);
@@ -212,11 +246,16 @@ describe('Синхронизация вкладок', () => {
 
   it('Не восстанавливает заметку, удалённую в другой вкладке', () => {
     const first = useNotesStore();
+
     first.load();
+
     const draft = first.getNote('1')!;
+
     draft.title = 'Мои несохранённые изменения';
     setActivePinia(createPinia());
+
     const second = useNotesStore();
+
     second.load();
 
     expect(second.deleteNote('1')).toBe(true);

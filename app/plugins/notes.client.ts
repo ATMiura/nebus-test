@@ -3,6 +3,7 @@ import { NOTES_STORAGE_KEY } from '~/utils/notes-storage';
 
 export default defineNuxtPlugin((nuxtApp) => {
   const notesStore = useNotesStore(nuxtApp.$pinia);
+
   notesStore.load();
 
   function syncNotes(event: StorageEvent) {

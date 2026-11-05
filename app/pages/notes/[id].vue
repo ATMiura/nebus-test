@@ -17,6 +17,8 @@
         :note="draft"
         :is-new="isNewNote"
         :is-dirty="isDirty"
+        :can-undo="history.canUndo.value"
+        :can-redo="history.canRedo.value"
         :unavailable="isDeleted"
         :show-errors="showErrors"
         @update-title="updateTitle"
@@ -24,6 +26,9 @@
         @update-todo-text="updateTodoText"
         @update-todo-completed="updateTodoCompleted"
         @remove-todo="removeTodo"
+        @blur="history.finishTextEdit"
+        @undo="undo"
+        @redo="redo"
         @save="saveNote"
         @cancel="cancelEditing"
         @delete="deleteNote"
@@ -59,6 +64,7 @@
 
 <script setup lang="ts">
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router';
+import { useNoteHistory } from '~/composables/useNoteHistory';
 import { useNotesStore } from '~/stores/notes';
 import type { Note } from '~/types/note';
 import { cloneNote, getNoteValidationError } from '~/utils/note';
@@ -67,23 +73,28 @@ const route = useRoute();
 const notesStore = useNotesStore();
 const isNewNote = computed(() => route.params.id === 'new');
 const draft = ref<Note | null>(null);
+const history = useNoteHistory(() => draft.value);
 const initialSnapshot = ref('');
 const showErrors = ref(false);
 const message = ref('');
 const messageVariant = ref<'error' | 'success'>('success');
 const confirmationOpen = ref(false);
 const confirmationKind = ref<'discard' | 'delete'>('discard');
+
 let pendingConfirmation: Promise<boolean> | null = null;
 let resolveConfirmation: ((confirmed: boolean) => void) | null = null;
+
 const isDirty = computed(
   () => draft.value !== null && JSON.stringify(draft.value) !== initialSnapshot.value,
 );
+
 const isDeleted = computed(
   () =>
     !isNewNote.value &&
     draft.value !== null &&
     !notesStore.notes.some((note) => note.id === draft.value?.id),
 );
+
 const confirmationMessage = computed(() => {
   if (confirmationKind.value === 'delete') {
     return 'Заметка и все её задачи будут удалены без возможности восстановления.';
@@ -91,6 +102,7 @@ const confirmationMessage = computed(() => {
 
   return 'Несохранённые изменения будут потеряны.';
 });
+
 const pageTitle = computed(() => {
   if (isNewNote.value) {
     return 'Новая заметка';
@@ -104,6 +116,8 @@ useHead({
 });
 
 function loadDraft() {
+  history.clear();
+
   const id = String(route.params.id);
 
   if (id === 'new') {
@@ -147,13 +161,17 @@ function requestConfirmation(kind: 'discard' | 'delete' = 'discard'): Promise<bo
 
 function finishConfirmation(confirmed: boolean) {
   confirmationOpen.value = false;
+
   const resolve = resolveConfirmation;
+
   resolveConfirmation = null;
   pendingConfirmation = null;
   resolve?.(confirmed);
 }
 
 async function saveNote() {
+  history.finishTextEdit();
+
   if (!draft.value || !isDirty.value || isDeleted.value) {
     return;
   }
@@ -178,6 +196,7 @@ async function saveNote() {
     return;
   }
 
+  history.clear();
   draft.value = cloneNote(savedNote);
   initialSnapshot.value = JSON.stringify(draft.value);
   showErrors.value = false;
@@ -198,6 +217,7 @@ async function deleteNote() {
   const confirmed = await requestConfirmation('delete');
 
   if (confirmed && draft.value && notesStore.deleteNote(draft.value.id)) {
+    history.clear();
     draft.value = null;
     initialSnapshot.value = JSON.stringify(null);
     await navigateTo('/');
@@ -212,6 +232,7 @@ async function cancelEditing() {
   const confirmed = await requestConfirmation();
 
   if (confirmed) {
+    history.clear();
     draft.value = JSON.parse(initialSnapshot.value) as Note | null;
     showErrors.value = false;
     message.value = '';
@@ -235,46 +256,43 @@ onBeforeRouteUpdate((to, from) => {
 });
 
 onBeforeUnmount(() => {
+  history.clear();
   finishConfirmation(false);
 });
 
+function undo() {
+  message.value = '';
+  history.undo();
+}
+
+function redo() {
+  message.value = '';
+  history.redo();
+}
+
 function updateTitle(value: string) {
   message.value = '';
-
-  if (draft.value) {
-    draft.value.title = value;
-  }
+  history.updateTitle(value);
 }
 
 function addTodo() {
   message.value = '';
-  draft.value?.todos.push({ id: crypto.randomUUID(), text: '', completed: false });
+  history.addTodo({ id: crypto.randomUUID(), text: '', completed: false });
 }
 
 function updateTodoText(id: string, value: string) {
   message.value = '';
-  const todo = draft.value?.todos.find((item) => item.id === id);
-
-  if (todo) {
-    todo.text = value;
-  }
+  history.updateTodoText(id, value);
 }
 
 function updateTodoCompleted(id: string, value: boolean) {
   message.value = '';
-  const todo = draft.value?.todos.find((item) => item.id === id);
-
-  if (todo) {
-    todo.completed = value;
-  }
+  history.updateTodoCompleted(id, value);
 }
 
 function removeTodo(id: string) {
   message.value = '';
-
-  if (draft.value) {
-    draft.value.todos = draft.value.todos.filter((todo) => todo.id !== id);
-  }
+  history.removeTodo(id);
 }
 </script>
 

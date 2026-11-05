@@ -50,9 +50,11 @@ const props = withDefaults(
 );
 
 const model = defineModel<string>({ required: true });
+
 const emit = defineEmits<{
   blur: [event: FocusEvent];
 }>();
+
 const attrs = useAttrs();
 const generatedId = useId();
 const inputId = computed(() => props.id ?? generatedId);
@@ -60,6 +62,7 @@ const element = useTemplateRef<HTMLInputElement | HTMLTextAreaElement>('element'
 
 function getControlAttrs() {
   const controlAttrs = { ...attrs };
+
   delete controlAttrs.class;
   delete controlAttrs.style;
 

@@ -33,6 +33,7 @@
       size="compact"
       placeholder="Что нужно сделать?"
       @update:model-value="emit('update:text', $event)"
+      @blur="emit('blur')"
     />
   </div>
 </template>
@@ -50,6 +51,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:text': [value: string];
   'update:completed': [value: boolean];
+  blur: [];
   remove: [];
 }>();
 

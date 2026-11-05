@@ -41,6 +41,7 @@ defineProps<{
 
 const open = defineModel<boolean>({ default: false });
 const element = useTemplateRef<HTMLDivElement>('element');
+
 let active = false;
 let previousFocusedElement: HTMLElement | null = null;
 let previousBodyOverflow = '';
@@ -67,6 +68,7 @@ function focusInitialElement() {
   const controls = getFocusableElements();
   const target = controls.find((control) => control.hasAttribute('autofocus'));
   const firstControl = target ?? controls[0] ?? element.value;
+
   firstControl?.focus({ preventScroll: true });
 }
 
@@ -89,6 +91,7 @@ function handleKeydown(event: KeyboardEvent) {
 
   event.preventDefault();
   event.stopPropagation();
+
   const controls = getFocusableElements();
 
   if (!controls.length) {
@@ -98,6 +101,7 @@ function handleKeydown(event: KeyboardEvent) {
   }
 
   const currentIndex = controls.findIndex((control) => control === document.activeElement);
+
   let nextIndex = 0;
 
   if (event.shiftKey) {

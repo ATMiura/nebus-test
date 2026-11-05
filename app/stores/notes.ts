@@ -13,6 +13,7 @@ import {
 export const useNotesStore = defineStore('notes', () => {
   const notes = ref<Note[]>([]);
   const error = ref('');
+
   let nextId = 1;
 
   function applyData(data: SavedNotes) {
@@ -39,6 +40,7 @@ export const useNotesStore = defineStore('notes', () => {
   function load() {
     try {
       const storage = getStorage();
+
       let data = readSavedNotes(storage);
 
       if (data === null) {
@@ -99,6 +101,7 @@ export const useNotesStore = defineStore('notes', () => {
       }
 
       const note = cloneNote(draft);
+
       note.id = String(data.nextId);
       data.nextId += 1;
       data.notes.push(note);
@@ -131,6 +134,7 @@ export const useNotesStore = defineStore('notes', () => {
       }
 
       const note = cloneNote(draft);
+
       data.notes[index] = note;
       writeSavedNotes(getStorage(), data);
       applyData(data);
