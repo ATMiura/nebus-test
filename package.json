@@ -11,6 +11,8 @@
     "typecheck": "nuxt typecheck",
     "format": "eslint . --fix && prettier --write .",
     "format:check": "eslint . && prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"
   },
@@ -25,6 +27,7 @@
     "prettier": "3.9.10",
     "sass": "^1.107.1",
     "typescript": "^6.0.3",
+    "vitest": "5.1.0",
     "vue-eslint-parser": "10.4.1",
     "vue-tsc": "^3.3.14"
   },
